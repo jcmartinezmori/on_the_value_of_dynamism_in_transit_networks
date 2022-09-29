@@ -8,8 +8,9 @@ def steiner(g, terminals, p, theta=1, static=False):
     m = gp.Model('steiner')
     m.setParam('Method', 2)
     m.setParam('MIPFocus', 1)
-    m.setParam('MIPGap', 1e-4)
+    m.setParam('MIPGap', 1e-2)
     m.setParam('OutputFlag', 1)
+    m.setParam('TimeLimit', 600)
 
     # pre-process
     max_k = len(terminals)

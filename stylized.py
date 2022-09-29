@@ -36,7 +36,7 @@ def generate_data(no_nodes=6, p_rule='unif', curve=True):
     terminals = np.array(terminals)
 
     # collect data
-    scatter_data = jb.Parallel(n_jobs=-1, verbose=1)(
+    scatter_data = jb.Parallel(n_jobs=1, verbose=1)(
         jb.delayed(scatter_df_helper)(*job) for job in [(p_rule, g, terminals) for g in graphs]
     )
 
@@ -53,7 +53,7 @@ def generate_data(no_nodes=6, p_rule='unif', curve=True):
         thetas = np.linspace(0.25, 3.5, 53)  # must contain 1
 
         # collect data
-        curve_data = jb.Parallel(n_jobs=-1, verbose=1)(
+        curve_data = jb.Parallel(n_jobs=1, verbose=1)(
             jb.delayed(curve_df_helper)(*job) for job in [
                 (p_rule, g, terminals, theta) for g in scatter_data for theta in thetas
             ]
