@@ -245,51 +245,6 @@ def curve_plotter():
     for file_format in file_format_l:
         fig.write_image('./images/{0}.{1}'.format('diff_dg', file_format), width=w, height=h, scale=1)
 
-    # if full_curve:
-       #      results_dfs = []
-       #      for no_nodes in no_nodes_l:
-       #          for p_rule in p_rule_l:
-       #              _, results_df = load_data(problem_solver, no_nodes, p_rule, full_curve=full_curve)
-       #              results_df['n'] = no_nodes
-       #              results_df['p_rule'] = dist_names[p_rule]
-       #              results_dfs.append(results_df)
-       #      results_df = pd.concat(results_dfs)
-       #
-       #      for alpha in alpha_l:
-       #          fig = px.line(
-       #              results_df, x='theta', y=alpha, facet_row='n', facet_col='p_rule', line_group='g_name',
-       #              hover_name='g_name',
-       #              hover_data={
-       #                  'n': False,
-       #                  'p_rule': False,
-       #              },
-       #              labels={
-       #                  'g_name': 'Graph',
-       #                  'n': r'$\huge{n}$',
-       #                  'theta': r'$\huge{\theta}$',
-       #                  'alpha': r'$\huge{\alpha(\theta)}$',
-       #                  'model_alpha': r'$\huge{\hat{\alpha}^-(\theta)}$',
-       #                  'diff_alpha': r'$\huge{\alpha(\theta) - \hat{\alpha}^-(\theta)}$'
-       #              },
-       #              title='Problem: {0}'.format(problem_names[problem_solver.__name__])
-       #          )
-       #          fig.update_layout(font_size=20)
-       #          fig.update_xaxes(tickfont_size=25)
-       #          fig.update_yaxes(tickfont_size=25, range=[-0.125, 5.125])
-       #          fig.add_hline(y=1, line_width=1, line_dash="dash", line_color="green")
-       #          fig.add_vline(x=1, line_width=1, line_dash="dash", line_color="green")
-       #          for a in fig.layout.annotations:
-       #              if a.text.split("=")[0] == '$\\huge{n}$':
-       #                  a.text = r'$\huge{n = ' + '{0}}}$'.format(a.text.split("=")[-1])
-       #                  a.x += 0.005
-       #              else:
-       #                  a.text = a.text.split("=")[1]
-       #          #fig.show()
-       #
-       #          for file_format in file_format_l:
-       #              fig.write_image('./images/{0}_{1}.{2}'.format(problem_solver.__name__, alpha, file_format),
-       #                              width=w, height=h, scale=1)
-
 
 main()
 # scatter_plotter()
