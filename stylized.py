@@ -64,7 +64,8 @@ def generate_data(no_nodes=6, p_rule='unif', curve=True):
             [(g.name, theta, obj, g._obj_static / obj, max(1, g._dg1 / theta)) for g, theta, obj in curve_data],
             columns=['g_name', 'theta', 'obj', 'dg', 'model_dg']
         )
-        curve_df['diff_dg'] = curve_df['dg'] / curve_df['model_dg']
+        curve_df['diff_dg'] = curve_df['dg'] - curve_df['model_dg']
+        curve_df['gap_dg'] = curve_df['dg'] / curve_df['model_dg']
         curve_df = curve_df.sort_values(by=['g_name', 'theta'])
 
         pd.to_pickle(curve_df, './stylized/curve_df_{0}_nodes_{1}_p_rule.pkl'.format(no_nodes, p_rule))
