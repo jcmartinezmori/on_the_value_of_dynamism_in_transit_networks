@@ -11,17 +11,17 @@ def scatter_df_helper(p_rule, g, terminals):
     g._alg_conn = lap_spec[1]
     p = p_generator(p_rule, g, terminals)
     g._obj_static = steiner(g, terminals, p, static=True)
-    obj = steiner(g, terminals, p, theta=1)
+    obj = steiner(g, terminals, p, thetas=1)
     g._dg1 = g._obj_static / obj
 
     return g
 
 
-def curve_df_helper(p_rule, g, terminals, theta):
+def curve_df_helper(p_rule, g, terminals, thetas):
 
     p = p_generator(p_rule, g, terminals)
-    obj = steiner(g, terminals, p, theta=theta)
-    return g, theta, obj
+    objs = steiner(g, terminals, p, thetas=thetas)
+    return g, thetas, objs
 
 
 def p_generator(p_rule, g, terminals):

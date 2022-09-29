@@ -2,7 +2,7 @@ import gurobipy as gp
 import numpy as np
 
 
-def steiner(g, terminals, p, theta=1, static=False):
+def steiner(g, terminals, p, thetas=1, static=False):
 
     # initialize
     m = gp.Model('steiner')
@@ -52,10 +52,24 @@ def steiner(g, terminals, p, theta=1, static=False):
     m.update()
 
     # set objective
-    m.setObjective(gp.quicksum(p[k] * (x[edge] + theta * z[(k, edge)]) for edge in g.edges() for k in range(max_k)))
-    m.update()
+    if np.isscalar(thetas):
+        theta = thetas
+        m.setObjective(
+            gp.quicksum(p[k] * (x[edge] + theta * z[(k, edge)]) for edge in g.edges() for k in range(max_k))
+        )
+        m.update()
+        m.optimize()
+        obj = m.ObjVal
+        return obj
 
-    # optimizing
-    m.optimize()
-
-    return m.ObjVal
+    else:
+        objs = []
+        for theta in thetas:
+            m.setObjective(
+                gp.quicksum(p[k] * (x[edge] + theta * z[(k, edge)]) for edge in g.edges() for k in range(max_k))
+            )
+            m.update()
+            m.optimize()
+            obj = m.ObjVal
+            objs.append(obj)
+        return objs

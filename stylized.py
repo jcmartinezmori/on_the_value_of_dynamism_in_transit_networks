@@ -50,18 +50,22 @@ def generate_data(no_nodes=6, p_rule='unif', curve=True):
     if curve:
 
         # noinspection PyUnresolvedReferences
-        thetas = np.linspace(0.25, 3.5, 53)  # must contain 1
+        # thetas = np.linspace(0.25, 3.5, 53)  # must contain 1
+        thetas = np.linspace(0.9375, 3.0625, 35)  # must contain 1
 
         # collect data
         curve_data = jb.Parallel(n_jobs=1, verbose=1)(
             jb.delayed(curve_df_helper)(*job) for job in [
-                (p_rule, g, terminals, theta) for g in scatter_data for theta in thetas
+                (p_rule, g, terminals, thetas) for g in scatter_data
             ]
         )
 
         # process and store data
         curve_df = pd.DataFrame(
-            [(g.name, theta, obj, g._obj_static / obj, max(1, g._dg1 / theta)) for g, theta, obj in curve_data],
+            [
+                (g.name, theta, obj, g._obj_static / obj, max(1, g._dg1 / theta))
+                for g, thetas, objs in curve_data for theta, obj in zip(thetas, objs)
+            ],
             columns=['g_name', 'theta', 'obj', 'dg', 'model_dg']
         )
         curve_df['diff_dg'] = curve_df['dg'] - curve_df['model_dg']
@@ -185,7 +189,7 @@ def scatter_plotter():
 
 def curve_plotter():
 
-    no_nodes = 4
+    no_nodes_l = [3, 4]
     p_rule_l = ['unif', 'closeness_cent', 'inv_closeness_cent']
     w = 1800 * 0.8
     h = 600
@@ -199,27 +203,18 @@ def curve_plotter():
 
     curves_df = []
 
-    for p_rule in p_rule_l:
+    for no_nodes in no_nodes_l:
+        for p_rule in p_rule_l:
 
-        if p_rule == 'unif':
-            r2_idx = -1
-            r2_pos = 'top left',
-        elif p_rule == 'closeness_cent':
-            r2_idx = -1
-            r2_pos = 'bottom left'
-        else:
-            r2_idx = -1
-            r2_pos = 'top left'
+            _, curve_df = load_data(no_nodes, p_rule, curve=True)
+            curve_df['n'] = no_nodes
+            curve_df['p_rule'] = dist_names[p_rule]
 
-        _, curve_df = load_data(no_nodes, p_rule, curve=True)
-        curve_df['n'] = no_nodes
-        curve_df['p_rule'] = dist_names[p_rule]
-
-        curves_df.append(curve_df)
+            curves_df.append(curve_df)
 
     curves_df = pd.concat(curves_df)
     fig = px.line(
-        curves_df, x='theta', y='diff_dg', facet_row='n', facet_col='p_rule', line_group='g_name', hover_name='g_name',
+        curves_df, x='theta', y='gap_dg', facet_row='n', facet_col='p_rule', line_group='g_name', hover_name='g_name',
         hover_data={
             'n': False,
             'p_rule': False
@@ -228,7 +223,7 @@ def curve_plotter():
              'g_name': 'Graph',
              'n': r'$\huge{n}$',
              'theta': r'$\huge{\theta}$',
-             'diff_dg': r'$\huge{\alpha(\theta) / \hat{\alpha}(\theta)}$'
+             'gap_dg': r'$\huge{\alpha(\theta) / \hat{\alpha}(\theta)}$'
         }
     )
     fig.update_layout(font_size=20)
