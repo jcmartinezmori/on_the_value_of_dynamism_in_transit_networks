@@ -7,7 +7,7 @@ def steiner(g, terminals, p, thetas=1, static=False):
     # initialize
     m = gp.Model('steiner')
     m.setParam('Method', 2)
-    m.setParam('MIPFocus', 1)
+    m.setParam('MIPFocus', 3)
     m.setParam('MIPGap', 1e-2)
     m.setParam('OutputFlag', 1)
     m.setParam('TimeLimit', 600)

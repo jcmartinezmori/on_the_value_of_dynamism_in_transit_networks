@@ -14,7 +14,7 @@ pio.renderers.default = "browser"
 
 def main():
 
-    no_nodes_l = [3, 4, 5, 6, 7]
+    no_nodes_l = [6]
     p_rule_l = ['unif', 'closeness_cent', 'inv_closeness_cent']
     for no_nodes in no_nodes_l:
         for p_rule in p_rule_l:
