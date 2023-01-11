@@ -1,5 +1,86 @@
 import gurobipy as gp
+import networkx as nx
 import numpy as np
+
+
+def steiner_forest(g, pairs, g_dists, rho=None, time_limit=None):
+
+    # initialize
+    m = gp.Model('steiner_forest')
+    m.setParam('Method', 2)
+    m.setParam('MIPFocus', 1)
+    m.setParam('MIPGap', 5e-2)
+    m.setParam('OutputFlag', 1)
+    if time_limit is None:
+        m.setParam('TimeLimit', 600)
+    else:
+        m.setParam('TimeLimit', time_limit)
+
+    # pre-process
+    m._g = g
+    m._dg = m._g.to_directed()
+    m._dg_rev = m._dg.reverse()
+    m._edges, m._costs = zip(*[((u, v), data['length']) for u, v, data in m._g.edges(data=True)])
+    m._arcs = [(u, v) for u, v in m._dg.edges()]
+
+    # add variables
+    m._xvars = m.addVars(m._edges, vtype=gp.GRB.BINARY, name='x')
+    for u, v in m._xvars:
+        m._xvars[(v, u)] = m._xvars[(u, v)]
+
+    # set objective
+    obj = gp.quicksum(cost * m._xvars[edge] for cost, edge in zip(m._costs, m._edges))
+    m.setObjective(obj)
+
+    # add variables and constraints
+    m._fvars = {}
+    for s, t in pairs:
+        if rho is not None:
+            s_edges = set(
+                edge for edge in nx.ego_graph(m._dg, s, radius=g_dists.loc[s, t] + 1, distance='length').edges())
+            t_edges = set(
+                edge for edge in nx.ego_graph(m._dg_rev, t, radius=g_dists.loc[s, t] + 1, distance='length').edges())
+            rho_edges = s_edges & t_edges
+            st_edges = set()
+            for edge in rho_edges:
+                u, v = edge
+                min_dist = min(g_dists.loc[s, u] + g_dists.loc[v, t], + g_dists.loc[s, v] + g_dists.loc[u, t])
+                if min_dist + m._dg.edges[edge]['length'] <= rho * g_dists.loc[s, t] + 1:
+                    st_edges.add(edge)
+            st_dg = nx.edge_subgraph(m._dg, st_edges)
+        else:
+            st_dg = m._dg
+        m._fvars[(s, t)] = m.addVars(m._arcs, vtype=gp.GRB.CONTINUOUS, lb=0.0, ub=1.0, name='f_{0}-{1}'.format(s, t))
+        for u in st_dg.nodes():
+            lhs = gp.quicksum(m._fvars[(s, t)][arc] for arc in st_dg.out_edges(u)) \
+                  - gp.quicksum(m._fvars[(s, t)][arc] for arc in st_dg.in_edges(u))
+            if u == s:
+                rhs = 1
+            elif u == t:
+                rhs = -1
+            else:
+                rhs = 0
+            m.addConstr(lhs == rhs)
+        for u, v in st_dg.edges():
+            lhs = m._fvars[(s, t)][(u, v)]
+            rhs = m._xvars[(u, v)]
+            m.addConstr(lhs <= rhs)
+        if rho is not None:
+            lhs = gp.quicksum(data['length'] * m._fvars[(s, t)][(u, v)] for u, v, data in st_dg.edges(data=True))
+            rhs = rho * g_dists.loc[s, t]
+            m.addConstr(lhs <= rhs)
+
+    # optimize
+    m.update()
+    m.optimize()
+
+    # post-process
+    edges = []
+    for u, v in m._g.edges():
+        if m._xvars[(u, v)].x > 0:
+            edges.append((u, v))
+
+    return m.ObjVal, edges
 
 
 def steiner(g, terminals, p, thetas=1, static=False):
@@ -51,7 +132,7 @@ def steiner(g, terminals, p, thetas=1, static=False):
                     m.addConstr(lhs <= rhs)
     m.update()
 
-    # set objective
+    # set objective and optimize
     if np.isscalar(thetas):
         theta = thetas
         m.setObjective(
