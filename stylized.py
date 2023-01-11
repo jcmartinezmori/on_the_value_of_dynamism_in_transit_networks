@@ -14,7 +14,7 @@ pio.renderers.default = "browser"
 
 def main():
 
-    no_nodes_l = [6]
+    no_nodes_l = [3, 4, 5, 6, 7]
     p_rule_l = ['unif', 'closeness_cent', 'inv_closeness_cent']
     for no_nodes in no_nodes_l:
         for p_rule in p_rule_l:
@@ -189,10 +189,10 @@ def scatter_plotter():
 
 def curve_plotter():
 
-    no_nodes_l = [3, 4]
+    no_nodes_l = [3, 4, 5, 6]
     p_rule_l = ['unif', 'closeness_cent', 'inv_closeness_cent']
     w = 1800 * 0.8
-    h = 600
+    h = 900
     file_format_l = ['pdf', 'png']
 
     dist_names = {
@@ -228,7 +228,7 @@ def curve_plotter():
     )
     fig.update_layout(font_size=20)
     fig.update_xaxes(tickfont_size=25)
-    fig.update_yaxes(tickfont_size=25, range=[-0.125, 5.125])
+    fig.update_yaxes(tickfont_size=25, range=[1-0.125/2, 1.25+0.125/2])
     fig.add_hline(y=1, line_width=1, line_dash="dash", line_color="green")
     fig.add_vline(x=1, line_width=1, line_dash="dash", line_color="green")
     for a in fig.layout.annotations:
@@ -239,9 +239,9 @@ def curve_plotter():
             a.text = a.text.split("=")[1]
 
     for file_format in file_format_l:
-        fig.write_image('./images/{0}.{1}'.format('diff_dg', file_format), width=w, height=h, scale=1)
+        fig.write_image('./images/{0}.{1}'.format('gap_dg', file_format), width=w, height=h, scale=1)
 
 
-main()
+# main()
 # scatter_plotter()
-# curve_plotter()
+curve_plotter()
